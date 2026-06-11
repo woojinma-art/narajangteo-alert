@@ -211,7 +211,7 @@ def main():
                 "공고일시": it.get("bidNtceDt", ""),
                 "입찰마감일": it.get("bidClseDt", ""),
                 "개찰일시": it.get("opengDt", ""),
-                "상세링크": it.get("ntceSpecDocUrl1", ""),
+                "상세링크": it.get("bidNtceUrl", ""),
             }
             new_items.append(record)
             new_rows.append([
