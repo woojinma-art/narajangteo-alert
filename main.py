@@ -124,13 +124,15 @@ def send_email(new_items):
         else:
             title_html = f'<span style="font-weight:bold;font-size:16px;">{it["공고명"]}</span>'
 
-        # 첨부파일: 파일명별 다운로드 링크 (없으면 안내 문구)
+        # 첨부파일: 파일명별 다운로드 링크를 한 줄씩 (없으면 안내 문구)
         if it["첨부파일"]:
-            files_html = " · ".join(
+            files_html = "".join(
+                f'<div style="margin-left:14px;">'
                 f'<a href="{f["url"]}" style="color:#1a73e8;text-decoration:none;">{f["name"]}</a>'
+                f'</div>'
                 for f in it["첨부파일"]
             )
-            attach_html = f'📎 첨부: {files_html}'
+            attach_html = f'📎 첨부파일:{files_html}'
         else:
             attach_html = '📎 첨부파일 없음'
 
