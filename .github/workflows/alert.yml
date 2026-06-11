@@ -1,0 +1,31 @@
+name: 나라장터 입찰공고 알림
+
+on:
+  schedule:
+    # 1시간마다 실행 (UTC 기준이지만 매시 실행이라 시간대 무관)
+    - cron: "0 * * * *"
+  workflow_dispatch:   # GitHub 화면에서 수동 실행도 가능
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 코드 체크아웃
+        uses: actions/checkout@v4
+
+      - name: 파이썬 설정
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: 패키지 설치
+        run: pip install -r requirements.txt
+
+      - name: 알림 실행
+        env:
+          DATA_API_KEY: ${{ secrets.DATA_API_KEY }}
+          GOOGLE_CREDENTIALS: ${{ secrets.GOOGLE_CREDENTIALS }}
+          GMAIL_FROM: ${{ secrets.GMAIL_FROM }}
+          GMAIL_PASSWORD: ${{ secrets.GMAIL_PASSWORD }}
+          GMAIL_TO: ${{ secrets.GMAIL_TO }}
+        run: python main.py
