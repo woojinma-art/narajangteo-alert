@@ -115,36 +115,39 @@ def send_email(new_items):
 
     subject = f"[나라장터 알림] 신규 공고 {len(new_items)}건"
 
-    # 본문 (HTML)
-    rows_html = ""
+    # 본문 (HTML) - 공고별 목록 형태
+    items_html = ""
     for it in new_items:
-        rows_html += f"""
-        <tr>
-          <td style="padding:8px;border:1px solid #ddd;">{it['업무']}</td>
-          <td style="padding:8px;border:1px solid #ddd;">{it['공고명']}</td>
-          <td style="padding:8px;border:1px solid #ddd;">{it['기관']}</td>
-          <td style="padding:8px;border:1px solid #ddd;white-space:nowrap;">{it['입찰마감일'] or '-'}</td>
-          <td style="padding:8px;border:1px solid #ddd;">
-            {'<a href="' + it['상세링크'] + '">바로가기</a>' if it['상세링크'] else '-'}
-          </td>
-        </tr>"""
+        # 공고명을 상세페이지 하이퍼링크로
+        if it["상세링크"]:
+            title_html = f'<a href="{it["상세링크"]}" style="color:#1a73e8;text-decoration:none;font-weight:bold;font-size:16px;">{it["공고명"]}</a>'
+        else:
+            title_html = f'<span style="font-weight:bold;font-size:16px;">{it["공고명"]}</span>'
+
+        # 첨부파일: 파일명별 다운로드 링크 (없으면 안내 문구)
+        if it["첨부파일"]:
+            files_html = " · ".join(
+                f'<a href="{f["url"]}" style="color:#1a73e8;text-decoration:none;">{f["name"]}</a>'
+                for f in it["첨부파일"]
+            )
+            attach_html = f'📎 첨부: {files_html}'
+        else:
+            attach_html = '📎 첨부파일 없음'
+
+        items_html += f"""
+        <div style="padding:14px 0;border-bottom:1px solid #eee;">
+          <div>{title_html}</div>
+          <div style="color:#555;font-size:13px;margin:4px 0;">
+            {it['기관']} | 입찰마감: {it['입찰마감일'] or '-'}
+          </div>
+          <div style="color:#555;font-size:13px;">{attach_html}</div>
+        </div>"""
 
     html = f"""
-    <div style="font-family:sans-serif;">
-      <h2>나라장터 신규 입찰공고 {len(new_items)}건</h2>
-      <p>설정하신 키워드에 해당하는 신규 공고가 등록되었습니다.</p>
-      <table style="border-collapse:collapse;width:100%;font-size:14px;">
-        <thead>
-          <tr style="background:#f2f2f2;">
-            <th style="padding:8px;border:1px solid #ddd;">업무</th>
-            <th style="padding:8px;border:1px solid #ddd;">공고명</th>
-            <th style="padding:8px;border:1px solid #ddd;">기관</th>
-            <th style="padding:8px;border:1px solid #ddd;">입찰마감</th>
-            <th style="padding:8px;border:1px solid #ddd;">링크</th>
-          </tr>
-        </thead>
-        <tbody>{rows_html}</tbody>
-      </table>
+    <div style="font-family:sans-serif;max-width:640px;">
+      <h2 style="font-size:18px;">나라장터 신규 입찰공고 {len(new_items)}건</h2>
+      <p style="color:#555;font-size:14px;">설정하신 키워드에 해당하는 신규 공고가 등록되었습니다.</p>
+      {items_html}
       <p style="color:#888;font-size:12px;margin-top:16px;">
         자세한 내용은 연결된 구글 시트에서도 확인할 수 있습니다.
       </p>
@@ -203,6 +206,14 @@ def main():
             if bid_no in existing_ids:
                 continue
 
+            # 첨부파일 수집 (파일명 + 다운로드 링크가 1~10번까지 짝으로 존재)
+            attachments = []
+            for i in range(1, 11):
+                file_name = it.get(f"ntceSpecFileNm{i}", "").strip()
+                file_url = it.get(f"ntceSpecDocUrl{i}", "").strip()
+                if file_name and file_url:
+                    attachments.append({"name": file_name, "url": file_url})
+
             record = {
                 "공고번호": bid_no,
                 "공고명": title,
@@ -212,6 +223,7 @@ def main():
                 "입찰마감일": it.get("bidClseDt", ""),
                 "개찰일시": it.get("opengDt", ""),
                 "상세링크": it.get("bidNtceUrl", ""),
+                "첨부파일": attachments,
             }
             new_items.append(record)
             new_rows.append([
