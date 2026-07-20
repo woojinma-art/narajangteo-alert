@@ -115,42 +115,47 @@ def send_email(new_items):
 
     subject = f"[나라장터 알림] 신규 공고 {len(new_items)}건"
 
-    # 본문 (HTML) - 공고별 목록 형태
+    # 본문 (HTML) - 카드형: 공고마다 흰 박스로 구분
     items_html = ""
     for it in new_items:
         # 공고명을 상세페이지 하이퍼링크로
         if it["상세링크"]:
-            title_html = f'<a href="{it["상세링크"]}" style="color:#1a73e8;text-decoration:none;font-weight:bold;font-size:16px;">{it["공고명"]}</a>'
+            title_html = f'<a href="{it["상세링크"]}" style="color:#1a5fb4;text-decoration:none;font-weight:bold;font-size:15px;">{it["공고명"]}</a>'
         else:
-            title_html = f'<span style="font-weight:bold;font-size:16px;">{it["공고명"]}</span>'
+            title_html = f'<span style="font-weight:bold;font-size:15px;color:#222;">{it["공고명"]}</span>'
 
-        # 첨부파일: 파일명별 다운로드 링크를 한 줄씩 (없으면 안내 문구)
+        # 첨부파일: 번호 없이 파일명별 다운로드 링크를 한 줄씩
         if it["첨부파일"]:
             files_html = "".join(
-                f'<div style="margin-left:14px;">'
-                f'<a href="{f["url"]}" style="color:#1a73e8;text-decoration:none;">{f["name"]}</a>'
-                f'</div>'
+                f'<a href="{f["url"]}" style="color:#1a5fb4;text-decoration:none;display:block;padding:2px 0;">{f["name"]}</a>'
                 for f in it["첨부파일"]
             )
-            attach_html = f'📎 첨부파일:{files_html}'
+            attach_html = (
+                '<div style="border-top:1px solid #eee;padding-top:10px;margin-top:12px;">'
+                '<div style="font-size:11px;color:#999;margin-bottom:5px;">첨부파일</div>'
+                f'{files_html}</div>'
+            )
         else:
-            attach_html = '📎 첨부파일 없음'
+            attach_html = (
+                '<div style="border-top:1px solid #eee;padding-top:10px;margin-top:12px;">'
+                '<div style="font-size:12px;color:#999;">첨부파일 없음</div></div>'
+            )
 
         items_html += f"""
-        <div style="padding:14px 0;border-bottom:1px solid #eee;">
+        <div style="background:#fff;border:1px solid #e0e0e0;border-radius:10px;padding:16px;margin-bottom:12px;">
           <div>{title_html}</div>
-          <div style="color:#555;font-size:13px;margin:4px 0;">
-            {it['기관']} | 입찰마감: {it['입찰마감일'] or '-'}
+          <div style="font-size:12px;color:#666;margin-top:8px;">
+            {it['기관']} &nbsp;|&nbsp; 입찰마감: {it['입찰마감일'] or '-'}
           </div>
-          <div style="color:#555;font-size:13px;">{attach_html}</div>
+          {attach_html}
         </div>"""
 
     html = f"""
-    <div style="font-family:sans-serif;max-width:640px;">
-      <h2 style="font-size:18px;">나라장터 신규 입찰공고 {len(new_items)}건</h2>
-      <p style="color:#555;font-size:14px;">설정하신 키워드에 해당하는 신규 공고가 등록되었습니다.</p>
+    <div style="font-family:'Malgun Gothic','맑은 고딕',sans-serif;background:#eef1f4;padding:16px;border-radius:10px;max-width:680px;">
+      <h2 style="font-size:17px;color:#222;margin:0 0 4px;">나라장터 신규 입찰공고 {len(new_items)}건</h2>
+      <p style="color:#666;font-size:13px;margin:0 0 14px;">설정하신 키워드에 해당하는 신규 공고가 등록되었습니다.</p>
       {items_html}
-      <p style="color:#888;font-size:12px;margin-top:16px;">
+      <p style="color:#999;font-size:12px;margin-top:12px;">
         자세한 내용은 연결된 구글 시트에서도 확인할 수 있습니다.
       </p>
     </div>"""
