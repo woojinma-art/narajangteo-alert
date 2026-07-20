@@ -127,7 +127,7 @@ def send_email(new_items):
         # 첨부파일: 번호 없이 파일명별 다운로드 링크를 한 줄씩
         if it["첨부파일"]:
             files_html = "".join(
-                f'<a href="{f["url"]}" style="color:#1a5fb4;text-decoration:none;display:block;padding:2px 0;">{f["name"]}</a>'
+                f'<a href="{f["url"]}" style="color:#1a5fb4;text-decoration:none;display:block;padding:2px 0;font-size:10px;">{f["name"]}</a>'
                 for f in it["첨부파일"]
             )
             attach_html = (
